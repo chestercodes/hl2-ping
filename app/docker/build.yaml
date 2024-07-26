@@ -1,0 +1,23 @@
+version: "2.4"
+services:
+  migrations:
+    image: ghcr.io/chestercodes/hl2-ping/migrations:${IMAGE_TAG}
+    build:
+      context: ..
+      dockerfile: docker/migrations.Dockerfile
+  e2etests:
+    image: ghcr.io/chestercodes/hl2-ping/e2etests:${IMAGE_TAG}
+    build:
+      context: ..
+      dockerfile: docker/e2etests.Dockerfile
+  smoketests:
+    image: ghcr.io/chestercodes/hl2-ping/smoketests:${IMAGE_TAG}
+    build:
+      context: ..
+      dockerfile: docker/smoketests.Dockerfile
+  api:
+    image: ghcr.io/chestercodes/hl2-ping/api:${IMAGE_TAG}
+    build:
+      context: ..
+      dockerfile: docker/api.Dockerfile
+      target: runtime

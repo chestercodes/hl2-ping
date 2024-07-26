@@ -1,0 +1,32 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: hlping-{{ .Release.Namespace }}-ingress
+  namespace: {{ .Release.Namespace }}
+spec:
+  entryPoints:
+    - web
+  routes:
+    - kind: Rule
+      match: Host(`ping-{{ .Release.Namespace }}.{{ .Values.private_top_level_domain }}`)
+      priority: 10
+      services:
+        - name: "hlping-service"
+          port: 80
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: hlping-{{ .Release.Namespace }}-public-ingress
+  namespace: {{ .Release.Namespace }}
+spec:
+  entryPoints:
+    - web
+  routes:
+    - kind: Rule
+      match: Host(`ping-{{ .Release.Namespace }}-{{ .Values.cluster_name }}.{{ .Values.public_top_level_domain }}`)
+      priority: 10
+      services:
+        - name: "hlping-service"
+          port: 80
+---

@@ -1,0 +1,46 @@
+version: "2.4"
+services:
+  migration:
+    build:
+      context: ..
+      dockerfile: docker/migrations.Dockerfile
+    environment:
+      - DB_HOST=172.17.0.1
+      - DB_USERNAME=postgres
+      - DB_DATABASE=pingapp
+      - DB_PASSWORD=pass
+    depends_on:
+      - db
+  db:
+    image: postgres:13.6
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=pingapp
+      - POSTGRES_PASSWORD=pass
+  api:
+    ports:
+      - '8080:80'
+    build:
+      context: ..
+      dockerfile: docker/api.Dockerfile
+      target: runtime
+    environment:
+      - DB_HOST=172.17.0.1
+      - DB_USERNAME=postgres
+      - DB_DATABASE=pingapp
+      - DB_PASSWORD=pass
+    depends_on:
+      - migration
+  e2etests:
+    build:
+      context: ..
+      dockerfile: docker/e2etests.Dockerfile
+    environment:
+      - DB_HOST=172.17.0.1
+      - DB_USERNAME=postgres
+      - DB_DATABASE=pingapp
+      - DB_PASSWORD=pass
+    depends_on:
+      - api

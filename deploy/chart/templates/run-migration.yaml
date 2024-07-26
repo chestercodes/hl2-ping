@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "hl2-ping-migrations"
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    argocd.argoproj.io/sync-wave: "-5"
+spec:
+  template:
+    spec:
+      imagePullSecrets:
+        - name: ghcr
+      containers:
+        - name: main
+          image: ghcr.io/chestercodes/hl2-ping/migrations:{{ .Values.image_tag }}
+          env:
+          - name: DB_HOST
+            value: "maindb"
+          - name: DB_DATABASE
+            value: "pingapp"
+          - name: DB_USERNAME
+            value: migrations
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: maindb-postgresql
+                key: migrations-password
+
+      restartPolicy: Never
+  backoffLimit: 1

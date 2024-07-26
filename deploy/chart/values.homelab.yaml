@@ -1,0 +1,3 @@
+cluster_name: homelab
+private_top_level_domain: home.arpa
+public_top_level_domain: your.tld

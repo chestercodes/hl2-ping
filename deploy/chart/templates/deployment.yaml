@@ -1,0 +1,44 @@
+apiVersion: apps/v1 #  for k8s versions before 1.9.0 use apps/v1beta2  and before 1.8.0 use extensions/v1beta1
+kind: Deployment
+metadata:
+  name: hl2-ping-backend-deployment
+spec:
+  selector:
+    matchLabels:
+      app: hlping
+      tier: backend
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: hlping
+        tier: backend
+    spec:
+      imagePullSecrets:
+        - name: ghcr
+      containers:
+      - name: main
+        image: ghcr.io/chestercodes/hl2-ping/api:{{ .Values.image_tag }}
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        env:
+        - name: ENVNAME
+          value: "{{ .Values.envname }}"
+        - name: MAINDB_USER
+          valueFrom:
+            secretKeyRef:
+              name: maindb-ping
+              key: ping-api-username
+        - name: MAINDB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: maindb-ping
+              key: ping-api-password
+        - name: IMAGE_TAG
+          value: "{{ .Values.image_tag }}"
+        - name: OTLP_ENDPOINT
+          value: "http://otlp:4317"
+        ports:
+        - containerPort: 8080

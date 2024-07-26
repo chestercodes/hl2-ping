@@ -1,0 +1,3 @@
+apiVersion: v2
+name: hl2-ping-deploy
+version: 1.0.0

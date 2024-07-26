@@ -1,0 +1,3 @@
+cluster_name: laptop
+private_top_level_domain: local
+public_top_level_domain: your.tld

@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "hl2-ping-push-tag"
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  template:
+    spec:
+      containers:
+        - name: main
+          image: mcr.microsoft.com/dotnet/sdk@sha256:4b684e6c74ab8dff26ac54c79d8242b1dd05aba06c367de2b583bad79fd6399b
+          command:
+            - "pwsh"
+            - "-c"
+            - |
+              $gitToken = $env:GIT_TOKEN
+              git clone "https://$gitToken@github.com/chestercodes/hl2-ping" therepo
+              cd therepo
+              git tag -f env-{{ .Values.envname }}
+              git push --tags -f
+          env:
+            - name: GIT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: github-creds
+                  key: token
+
+      restartPolicy: Never
+  backoffLimit: 1

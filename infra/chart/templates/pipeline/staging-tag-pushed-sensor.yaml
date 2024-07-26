@@ -1,0 +1,60 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: hl2-ping-staging-tag-pushed-sensor
+  namespace: pipeline
+spec:
+  template:
+    serviceAccountName: argo-events-sa
+  dependencies:
+    - name: github
+      eventSourceName: github
+      eventName: hl2-ping
+      filters:
+        data:
+          - path: "body.ref"
+            type: string
+            value:
+              - "refs/tags/env-staging"
+          - path: "body.created"
+            type: bool
+            value:
+              - "false"
+  entrypoint: trigger
+  triggers:
+    - template:
+        name: trigger
+        argoWorkflow:
+          operation: submit
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                name: hl2-ping-staging-updated-
+              spec:
+                arguments:
+                  parameters:
+                    - name: tag_value
+                      value: replace_me
+                    - name: code_repo_name
+                      value: hl2-ping
+                    - name: script_path
+                      value: infra/scripts/update-versions-on-production.ps1
+                workflowTemplateRef:
+                  name: run-tag-triggered-script
+          parameters:
+            - src:
+                dependencyName: github
+                dataTemplate: '{{`{{ regexReplaceAll "refs/tags/" .Input.body.ref "" }}`}}'
+              dest: spec.arguments.parameters.0.value
+            - src:
+                dependencyName: github
+                dataTemplate: '{{`{{ regexReplaceAll "refs/tags/" .Input.body.ref "" }}`}}'
+              dest: metadata.name
+              operation: append
+            - src:
+                dependencyName: github
+                dataTemplate: '-{{`{{ regexReplaceAll "\\W+" .Input.body.repository.updated_at "" | lower }}`}}'
+              dest: metadata.name
+              operation: append

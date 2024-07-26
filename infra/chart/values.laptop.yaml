@@ -1,0 +1,3 @@
+cluster_name: laptop
+top_level_domain: your.tld
+tunnel_name: ping-laptop

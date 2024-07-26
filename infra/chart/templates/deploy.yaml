@@ -1,0 +1,55 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hl2-ping-deploy-production
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: production
+  source:
+    repoURL: https://github.com/chestercodes/hl2-ping.git
+    targetRevision: "{{ .Values.production_deploy_target_revision }}"
+    path: deploy/chart
+    helm:
+      valueFiles:
+      - values.{{ .Values.cluster_name }}.yaml
+      - values.production.yaml
+      - versions/production.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: production
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+    - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hl2-ping-deploy-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: staging
+  source:
+    repoURL: https://github.com/chestercodes/hl2-ping.git
+    targetRevision: HEAD
+    path: deploy/chart
+    helm:
+      valueFiles:
+      - values.{{ .Values.cluster_name }}.yaml
+      - values.staging.yaml
+      - versions/staging.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: staging
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+    - CreateNamespace=true

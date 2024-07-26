@@ -1,0 +1,4 @@
+**/bin/*
+**/obj/*
+
+steps/01-create-secrets.sh
